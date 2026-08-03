@@ -41,10 +41,10 @@
   <button id="musicToggle" class="music-toggle" aria-label="Toggle background music" title="Toggle romantic tune">
     🔇
   </button>
-  <!-- Bonus: placeholder romantic tune. Swap the src for any royalty-free track you like. -->
-  <audio id="bgMusic" loop preload="none">
-    <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lovely-piano-115377.mp3" type="audio/mpeg" />
-  </audio>
+  <!-- Background music now plays via a hidden YouTube embed (see script.js).
+       Video ID below is from https://www.youtube.com/watch?v=9OyZznPFCeo -->
+  <div id="ytPlayer" style="position:fixed; width:1px; height:1px; opacity:0; pointer-events:none;"></div>
+  <script src="https://www.youtube.com/iframe_api"></script>
   <audio id="popSound" preload="none">
     <source src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_c6ccf3d54c.mp3?filename=pop-39222.mp3" type="audio/mpeg" />
   </audio>
@@ -87,12 +87,54 @@
       </div>
     </section>
 
-    <!-- ---------- SCREEN 3: Celebration ---------- -->
+    <!-- ---------- SCREEN 3: Plan the date (type + calendar) ---------- -->
+    <section id="planScreen" class="screen plan-screen hidden">
+      <div class="card plan-card">
+        <div class="card-sparkle">✨</div>
+        <h2 class="plan-title">One more thing&hellip; 💭</h2>
+        <p class="plan-subtitle">What kind of date, and when?</p>
+
+        <!-- Date-type picker -->
+        <div class="date-type-grid" id="dateTypeGrid">
+          <button type="button" class="date-type-btn" data-type="Coffee Date ☕">
+            <span class="date-type-emoji">☕</span>
+            <span class="date-type-label">Coffee Date</span>
+          </button>
+          <button type="button" class="date-type-btn" data-type="Fast Food 🍔">
+            <span class="date-type-emoji">🍔</span>
+            <span class="date-type-label">Fast Food</span>
+          </button>
+          <button type="button" class="date-type-btn" data-type="Samgyupsal 🥩">
+            <span class="date-type-emoji">🥩</span>
+            <span class="date-type-label">Samgyupsal</span>
+          </button>
+        </div>
+
+        <!-- Mini calendar -->
+        <div class="calendar" id="calendar">
+          <div class="calendar-header">
+            <button type="button" id="prevMonthBtn" class="cal-nav-btn" aria-label="Previous month">&#10094;</button>
+            <span class="calendar-month-label" id="calendarMonthLabel"></span>
+            <button type="button" id="nextMonthBtn" class="cal-nav-btn" aria-label="Next month">&#10095;</button>
+          </div>
+          <div class="calendar-weekdays">
+            <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+          </div>
+          <div class="calendar-grid" id="calendarGrid"></div>
+        </div>
+
+        <p class="plan-selection" id="planSelectionSummary">&nbsp;</p>
+
+        <button type="button" id="confirmPlanBtn" class="btn btn-yes" disabled>Confirm Our Date 💌</button>
+      </div>
+    </section>
+
+    <!-- ---------- SCREEN 4: Celebration ---------- -->
     <section id="celebrationScreen" class="screen celebration-screen hidden">
       <div class="happy-face" id="happyFace">😊❤️</div>
       <h1 class="yay-text">YAY!! 🎉</h1>
-      <p class="yay-sub">I knew you'd say YES! ❤️</p>
-      <p class="yay-sub2">Can't wait for our date! 🌹</p>
+      <p class="yay-sub">Sabi na mag yeYES ka ❤️</p>
+      <p class="yay-sub2" id="yaySub2">Can't wait for our date! 🌹</p>
 
       <!-- Bonus final CTA: replace the href with your real contact link (sms:, https://instagram.com/..., etc.) -->
       <a
