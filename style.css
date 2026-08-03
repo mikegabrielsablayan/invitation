@@ -167,35 +167,6 @@ button:focus-visible, a:focus-visible {
 }
 
 /* =========================================================================
-   MUSIC TOGGLE
-   ========================================================================= */
-.music-toggle {
-  position: fixed;
-  top: 16px;
-  right: 16px;
-  z-index: 50;
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background: var(--white);
-  box-shadow: 0 6px 16px var(--shadow);
-  font-size: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.music-toggle:hover {
-  transform: scale(1.1) rotate(-8deg);
-  box-shadow: 0 8px 20px var(--shadow);
-}
-
-.music-toggle:active {
-  transform: scale(0.92);
-}
-
-/* =========================================================================
    STAGE / SCREENS
    ========================================================================= */
 .stage {
@@ -811,7 +782,7 @@ button:focus-visible, a:focus-visible {
 
 @media (hover: none) {
   /* Touch devices: skip hover-only transforms so taps don't feel stuck */
-  .btn-yes:hover, .btn-message:hover, .music-toggle:hover {
+  .btn-yes:hover, .btn-message:hover {
     transform: none;
   }
 }
