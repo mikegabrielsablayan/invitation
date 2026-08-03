@@ -37,12 +37,11 @@
 
   <!-- Heart cursor trail dots get appended straight to body via JS -->
 
-  <!-- ===================== MUSIC TOGGLE ===================== -->
-  <button id="musicToggle" class="music-toggle" aria-label="Toggle background music" title="Toggle romantic tune">
-    🔇
-  </button>
-  <!-- Background music now plays via a hidden YouTube embed (see script.js).
-       Video ID below is from https://www.youtube.com/watch?v=9OyZznPFCeo -->
+  <!-- Background music plays automatically once the visitor taps the
+       envelope (their first interaction) via a hidden YouTube embed.
+       Browsers block true autoplay-with-sound before any interaction,
+       so this is the earliest point sound can legally start.
+       Video: NIKI - Take A Chance With Me -->
   <div id="ytPlayer" style="position:fixed; width:1px; height:1px; opacity:0; pointer-events:none;"></div>
   <script src="https://www.youtube.com/iframe_api"></script>
   <audio id="popSound" preload="none">
@@ -133,7 +132,7 @@
     <section id="celebrationScreen" class="screen celebration-screen hidden">
       <div class="happy-face" id="happyFace">😊❤️</div>
       <h1 class="yay-text">YAY!! 🎉</h1>
-      <p class="yay-sub">Siring pa ma YES ka! ❤️</p>
+      <p class="yay-sub">Siring padaw ma YES ka haha! ❤️</p>
       <p class="yay-sub2" id="yaySub2">Can't wait for our date! 🌹</p>
 
       <a
