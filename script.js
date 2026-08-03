@@ -1,788 +1,526 @@
 /* =========================================================================
-   TOKENS — the whole palette lives here so everything stays consistent
+   CUTE DATE INVITATION — script.js
+   Pure vanilla JS. Organized into small focused sections:
+   1. Ambient background (floating hearts + sparkles)
+   2. Cursor heart trail
+   3. Music toggle + sound effects
+   4. Envelope open -> question card flow
+   5. Typewriter effect for the question
+   6. YES / NO button game
+   7. Celebration: confetti + fireworks
+   8. Misc fun: disable right-click, prevent selection safety net
    ========================================================================= */
-:root {
-  --pink-pale:   #ffeef3;
-  --pink-soft:   #ffd6e2;
-  --pink:        #ff9ebb;
-  --pink-hot:    #ff5d8f;
-  --red-deep:    #e8385f;
-  --white:       #fffdfc;
-  --ink:         #5c2438;
-  --ink-soft:    #9a5a72;
-  --shadow:      rgba(232, 56, 95, 0.25);
 
-  --font-display: 'Pacifico', cursive;
-  --font-body: 'Poppins', sans-serif;
-}
+document.addEventListener('DOMContentLoaded', () => {
 
-/* =========================================================================
-   RESET & BASE
-   ========================================================================= */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  /* Prevent text selection everywhere, per the "for fun" requirement */
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
+  /* ============================ 1. FLOATING HEARTS + SPARKLES ============================ */
 
-html, body {
-  height: 100%;
-  overflow-x: hidden;
-}
+  const heartsContainer = document.getElementById('floatingHearts');
+  const sparklesContainer = document.getElementById('sparkles');
+  const HEART_EMOJIS = ['💗', '💖', '💕', '❤️', '💘', '💓'];
 
-body {
-  font-family: var(--font-body);
-  color: var(--ink);
-  min-height: 100svh;
-  background: linear-gradient(160deg, var(--pink-pale) 0%, var(--pink-soft) 45%, #ffc6d9 100%);
-  background-attachment: fixed;
-  cursor: default;
-  position: relative;
-}
+  function spawnFloatingHeart() {
+    const heart = document.createElement('span');
+    heart.className = 'floating-heart';
+    heart.textContent = HEART_EMOJIS[Math.floor(Math.random() * HEART_EMOJIS.length)];
 
-button, a {
-  font-family: var(--font-body);
-  cursor: pointer;
-  border: none;
-  outline: none;
-  text-decoration: none;
-}
+    const startX = Math.random() * 100; // vw
+    const size = 14 + Math.random() * 20; // px
+    const duration = 8 + Math.random() * 8; // seconds
+    const drift = (Math.random() * 80 - 40) + 'px';
 
-/* Still allow keyboard users to see where focus is */
-button:focus-visible, a:focus-visible {
-  outline: 3px solid var(--red-deep);
-  outline-offset: 3px;
-}
+    heart.style.left = startX + 'vw';
+    heart.style.fontSize = size + 'px';
+    heart.style.animationDuration = duration + 's';
+    heart.style.setProperty('--drift', drift);
 
-/* Respect users who prefer reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
+    heartsContainer.appendChild(heart);
+
+    // Clean up once the animation finishes so the DOM doesn't grow forever
+    setTimeout(() => heart.remove(), duration * 1000 + 200);
   }
-}
 
-/* =========================================================================
-   AMBIENT BACKGROUND — soft drifting color blobs
-   ========================================================================= */
-.bg-blobs {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-  z-index: 0;
-  pointer-events: none;
-}
-
-.blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(60px);
-  opacity: 0.55;
-  animation: drift 18s ease-in-out infinite;
-}
-
-.blob-a {
-  width: 320px; height: 320px;
-  background: var(--pink);
-  top: -80px; left: -60px;
-  animation-duration: 22s;
-}
-
-.blob-b {
-  width: 260px; height: 260px;
-  background: #ffb3c6;
-  bottom: -60px; right: -40px;
-  animation-duration: 26s;
-  animation-delay: -6s;
-}
-
-.blob-c {
-  width: 200px; height: 200px;
-  background: #ffd6e2;
-  top: 40%; right: 10%;
-  animation-duration: 20s;
-  animation-delay: -3s;
-}
-
-@keyframes drift {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(30px, -20px) scale(1.08); }
-  66% { transform: translate(-20px, 25px) scale(0.95); }
-}
-
-/* =========================================================================
-   FLOATING HEARTS + SPARKLES (elements injected by JS)
-   ========================================================================= */
-.floating-hearts, .sparkles, .confetti-layer {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.floating-heart {
-  position: absolute;
-  bottom: -10%;
-  font-size: 22px;
-  opacity: 0.75;
-  animation-name: floatUp;
-  animation-timing-function: ease-in;
-  animation-iteration-count: infinite;
-  will-change: transform, opacity;
-}
-
-@keyframes floatUp {
-  0% {
-    transform: translateY(0) translateX(0) rotate(0deg);
-    opacity: 0;
+  function spawnSparkle() {
+    const sparkle = document.createElement('span');
+    sparkle.className = 'sparkle';
+    sparkle.textContent = Math.random() > 0.5 ? '✨' : '⭐';
+    sparkle.style.left = Math.random() * 100 + 'vw';
+    sparkle.style.top = Math.random() * 100 + 'vh';
+    sparkle.style.animationDuration = (1.8 + Math.random() * 1.6) + 's';
+    sparklesContainer.appendChild(sparkle);
+    setTimeout(() => sparkle.remove(), 4000);
   }
-  10% { opacity: 0.85; }
-  50% {
-    transform: translateY(-55vh) translateX(var(--drift, 20px)) rotate(15deg);
+
+  // Keep a gentle steady stream of hearts and sparkles going the whole time
+  setInterval(spawnFloatingHeart, 900);
+  setInterval(spawnSparkle, 1400);
+  // Seed a few immediately so the page doesn't feel empty on load
+  for (let i = 0; i < 6; i++) setTimeout(spawnFloatingHeart, i * 250);
+
+
+  /* ============================ 2. CURSOR HEART TRAIL ============================ */
+
+  let lastTrailTime = 0;
+  function handleCursorTrail(x, y) {
+    const now = Date.now();
+    if (now - lastTrailTime < 60) return; // throttle so it doesn't flood the DOM
+    lastTrailTime = now;
+
+    const dot = document.createElement('span');
+    dot.className = 'cursor-heart';
+    dot.textContent = '💕';
+    dot.style.left = x + 'px';
+    dot.style.top = y + 'px';
+    document.body.appendChild(dot);
+    setTimeout(() => dot.remove(), 700);
   }
-  90% { opacity: 0.7; }
-  100% {
-    transform: translateY(-110vh) translateX(calc(var(--drift, 20px) * -1)) rotate(-10deg);
-    opacity: 0;
+
+  window.addEventListener('mousemove', (e) => handleCursorTrail(e.clientX, e.clientY));
+  window.addEventListener('touchmove', (e) => {
+    if (e.touches[0]) handleCursorTrail(e.touches[0].clientX, e.touches[0].clientY);
+  }, { passive: true });
+
+
+  /* ============================ 3. BACKGROUND MUSIC (auto-starts, no off switch) ============================ */
+
+  const popSound = document.getElementById('popSound');
+
+  // Background music is a hidden YouTube embed, loaded via the YouTube
+  // IFrame API. The video ID below is from the chosen track's watch URL.
+  const YT_VIDEO_ID = 'iygXgP2nOF4'; // NIKI - Take A Chance With Me (Official Lyric Video)
+  let ytPlayer = null;
+  let ytReady = false;
+  let musicPlaying = false;
+  let musicRequested = false; // set true the moment the visitor taps the envelope
+
+  // The YouTube IFrame API calls this global function once it has loaded.
+  window.onYouTubeIframeAPIReady = function () {
+    ytPlayer = new YT.Player('ytPlayer', {
+      videoId: YT_VIDEO_ID,
+      playerVars: {
+        autoplay: 0,
+        controls: 0,
+        loop: 1,
+        playlist: YT_VIDEO_ID, // required for loop to work on a single video
+        playsinline: 1
+      },
+      events: {
+        onReady: () => {
+          ytReady = true;
+          ytPlayer.setVolume(40);
+          // If the envelope was already tapped before the API finished
+          // loading, start the music now instead of waiting for another tap
+          if (musicRequested) startMusic();
+        }
+      }
+    });
+  };
+
+  function startMusic() {
+    musicRequested = true;
+    if (ytReady && !musicPlaying) {
+      ytPlayer.playVideo();
+      musicPlaying = true;
+    }
   }
-}
 
-.sparkle {
-  position: absolute;
-  font-size: 14px;
-  opacity: 0;
-  animation: twinkle 2.4s ease-in-out infinite;
-}
-
-@keyframes twinkle {
-  0%, 100% { opacity: 0; transform: scale(0.4) rotate(0deg); }
-  50% { opacity: 1; transform: scale(1.1) rotate(20deg); }
-}
-
-/* =========================================================================
-   STAGE / SCREENS
-   ========================================================================= */
-.stage {
-  position: relative;
-  z-index: 2;
-  min-height: 100svh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-
-.screen {
-  width: 100%;
-  max-width: 480px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  transition: opacity 0.5s ease;
-}
-
-.hidden {
-  display: none !important;
-}
-
-/* Fade-in whenever a screen is revealed via JS (class added dynamically) */
-.screen-enter {
-  animation: fadeIn 0.6s ease both;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* =========================================================================
-   SCREEN 1 — LANDING / ENVELOPE
-   ========================================================================= */
-.eyebrow {
-  font-size: clamp(1.1rem, 4vw, 1.5rem);
-  font-weight: 700;
-  color: var(--red-deep);
-  margin-bottom: 40px;
-  letter-spacing: 0.5px;
-  animation: pulseText 2.4s ease-in-out infinite;
-}
-
-@keyframes pulseText {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
-.envelope-btn {
-  background: transparent;
-  padding: 20px;
-  perspective: 800px;
-}
-
-.envelope {
-  position: relative;
-  width: 200px;
-  height: 130px;
-  display: block;
-  animation: bounce 2.2s ease-in-out infinite;
-}
-
-@keyframes bounce {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-14px) scale(1.02); }
-}
-
-/* Envelope back panel */
-.envelope-back {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, var(--white), var(--pink-pale));
-  border-radius: 10px;
-  box-shadow: 0 18px 30px var(--shadow);
-}
-
-/* The letter that slides up out of the envelope on open */
-.envelope-letter {
-  position: absolute;
-  left: 10px;
-  right: 10px;
-  top: 10px;
-  height: 90px;
-  background: var(--white);
-  border-radius: 6px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 26px;
-  transform: translateY(0);
-  transition: transform 0.7s cubic-bezier(.34,1.56,.64,1);
-  z-index: 1;
-}
-
-/* Bottom triangle flap (front-lower half) */
-.envelope-front-left,
-.envelope-front-right {
-  position: absolute;
-  bottom: 0;
-  width: 0;
-  height: 0;
-  border-style: solid;
-  z-index: 3;
-}
-
-.envelope-front-left {
-  left: 0;
-  border-width: 0 0 65px 100px;
-  border-color: transparent transparent var(--pink) transparent;
-}
-
-.envelope-front-right {
-  right: 0;
-  border-width: 65px 100px 0 0;
-  border-color: transparent var(--pink-hot) transparent transparent;
-}
-
-/* Top flap (triangle) that opens like a lid */
-.envelope-flap {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 0;
-  height: 0;
-  border-style: solid;
-  border-width: 0 100px 70px 100px;
-  border-color: transparent transparent var(--pink-soft) transparent;
-  transform-origin: top center;
-  transform: rotateX(0deg);
-  transition: transform 0.6s ease, z-index 0s 0.3s;
-  z-index: 4;
-}
-
-.envelope-seal {
-  position: absolute;
-  top: 42px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 22px;
-  z-index: 5;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  animation: seal-pulse 1.6s ease-in-out infinite;
-}
-
-@keyframes seal-pulse {
-  0%, 100% { transform: translateX(-50%) scale(1); }
-  50% { transform: translateX(-50%) scale(1.15); }
-}
-
-/* ---- OPEN STATE (class toggled by JS) ---- */
-.envelope.is-open {
-  animation: none;
-}
-
-.envelope.is-open .envelope-flap {
-  transform: rotateX(180deg);
-  z-index: 0;
-  transition: transform 0.6s ease;
-}
-
-.envelope.is-open .envelope-seal {
-  opacity: 0;
-  transform: translateX(-50%) scale(0.4);
-}
-
-.envelope.is-open .envelope-letter {
-  transform: translateY(-70px) scale(1.05);
-}
-
-.hint {
-  margin-top: 28px;
-  color: var(--ink-soft);
-  font-size: 0.9rem;
-  animation: fadeFlicker 2s ease-in-out infinite;
-}
-
-@keyframes fadeFlicker {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 1; }
-}
-
-/* =========================================================================
-   SCREEN 2 — QUESTION CARD
-   ========================================================================= */
-.card {
-  position: relative;
-  background: var(--white);
-  border-radius: 28px;
-  padding: 44px 30px 36px;
-  width: 100%;
-  box-shadow: 0 24px 50px var(--shadow);
-  animation: popIn 0.55s cubic-bezier(.34,1.56,.64,1) both;
-  min-height: 300px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-
-@keyframes popIn {
-  0% { opacity: 0; transform: scale(0.7) translateY(20px); }
-  100% { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-.card-sparkle {
-  position: absolute;
-  top: 18px;
-  right: 22px;
-  font-size: 22px;
-  animation: twinkle 1.8s ease-in-out infinite;
-}
-
-.question-text {
-  font-family: var(--font-display);
-  font-size: clamp(1.5rem, 6vw, 2rem);
-  color: var(--red-deep);
-  line-height: 1.4;
-  min-height: 3.4em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* blinking typewriter caret */
-.typing-caret::after {
-  content: '|';
-  margin-left: 2px;
-  animation: caretBlink 0.8s steps(1) infinite;
-  color: var(--pink-hot);
-}
-
-@keyframes caretBlink {
-  50% { opacity: 0; }
-}
-
-.button-row {
-  position: relative;
-  width: 100%;
-  min-height: 90px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  margin-top: 18px;
-  flex-wrap: wrap;
-}
-
-.btn {
-  border-radius: 999px;
-  font-weight: 700;
-  font-size: 1rem;
-  padding: 14px 28px;
-  box-shadow: 0 10px 22px var(--shadow);
-  transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s ease, background 0.25s ease, left 0.35s ease, top 0.35s ease;
-  white-space: nowrap;
-}
-
-.btn-yes {
-  background: linear-gradient(135deg, var(--pink-hot), var(--red-deep));
-  color: var(--white);
-  animation: gentlePulse 1.8s ease-in-out infinite;
-}
-
-.btn-yes:hover {
-  transform: scale(1.08) rotate(-2deg);
-  box-shadow: 0 14px 26px var(--shadow);
-}
-
-.btn-yes:active {
-  transform: scale(0.96);
-}
-
-@keyframes gentlePulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.06); }
-}
-
-.btn-no {
-  background: var(--white);
-  color: var(--ink-soft);
-  border: 2px solid var(--pink-soft);
-  position: relative;
-}
-
-.btn-no:hover {
-  background: var(--pink-pale);
-}
-
-/* When the NO button is being chased around, it becomes absolutely
-   positioned within the card so it can be placed at random coordinates */
-.btn-no.is-fleeing {
-  position: absolute;
-}
-
-.teasing-msg {
-  min-height: 1.4em;
-  font-size: 0.9rem;
-  color: var(--ink-soft);
-  font-weight: 500;
-  animation: fadeFlicker 0.4s ease;
-}
-
-/* =========================================================================
-   SCREEN 3 — PLAN THE DATE (type picker + calendar)
-   ========================================================================= */
-.plan-card {
-  gap: 16px;
-  padding: 34px 24px 30px;
-}
-
-.plan-title {
-  font-family: var(--font-display);
-  font-size: clamp(1.4rem, 6vw, 1.8rem);
-  color: var(--red-deep);
-}
-
-.plan-subtitle {
-  color: var(--ink-soft);
-  font-size: 0.92rem;
-  margin-top: -6px;
-}
-
-/* ---- Date type cards ---- */
-.date-type-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  width: 100%;
-  margin-top: 4px;
-}
-
-.date-type-btn {
-  background: var(--pink-pale);
-  border: 2px solid transparent;
-  border-radius: 18px;
-  padding: 14px 6px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-}
-
-.date-type-emoji {
-  font-size: 1.6rem;
-}
-
-.date-type-label {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--ink);
-  line-height: 1.2;
-}
-
-.date-type-btn:hover {
-  transform: translateY(-3px);
-  background: var(--pink-soft);
-}
-
-.date-type-btn.selected {
-  border-color: var(--red-deep);
-  background: linear-gradient(135deg, var(--pink), var(--pink-hot));
-  animation: gentlePulse 1.6s ease-in-out infinite;
-}
-
-.date-type-btn.selected .date-type-label {
-  color: var(--white);
-}
-
-/* ---- Calendar ---- */
-.calendar {
-  width: 100%;
-  margin-top: 6px;
-  background: var(--pink-pale);
-  border-radius: 18px;
-  padding: 14px;
-}
-
-.calendar-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.calendar-month-label {
-  font-weight: 700;
-  color: var(--red-deep);
-  font-size: 0.95rem;
-}
-
-.cal-nav-btn {
-  background: var(--white);
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  font-size: 0.8rem;
-  color: var(--red-deep);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 10px var(--shadow);
-  transition: transform 0.2s ease;
-}
-
-.cal-nav-btn:hover {
-  transform: scale(1.1);
-}
-
-.calendar-weekdays {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  text-align: center;
-  font-size: 0.7rem;
-  color: var(--ink-soft);
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-}
-
-.cal-day {
-  aspect-ratio: 1 / 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  font-size: 0.78rem;
-  font-weight: 500;
-  color: var(--ink);
-  background: transparent;
-  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
-}
-
-.cal-day:hover:not(.disabled):not(.empty) {
-  background: var(--pink-soft);
-}
-
-.cal-day.empty {
-  visibility: hidden;
-}
-
-.cal-day.disabled {
-  color: #d8b9c3;
-  cursor: default;
-}
-
-.cal-day.today {
-  border: 2px solid var(--pink-hot);
-}
-
-.cal-day.selected {
-  background: linear-gradient(135deg, var(--pink-hot), var(--red-deep));
-  color: var(--white);
-  transform: scale(1.1);
-}
-
-.plan-selection {
-  min-height: 1.3em;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--red-deep);
-}
-
-#confirmPlanBtn {
-  margin-top: 4px;
-}
-
-#confirmPlanBtn:disabled {
-  opacity: 0.45;
-  animation: none;
-  cursor: not-allowed;
-  transform: none !important;
-}
-
-/* =========================================================================
-   SCREEN 4 — CELEBRATION
-   ========================================================================= */
-.celebration-screen {
-  position: relative;
-  z-index: 3;
-}
-
-.happy-face {
-  font-size: clamp(3.5rem, 18vw, 6rem);
-  animation: happyBounce 1s cubic-bezier(.34,1.56,.64,1) both;
-  filter: drop-shadow(0 12px 18px var(--shadow));
-}
-
-@keyframes happyBounce {
-  0% { transform: scale(0) rotate(-30deg); opacity: 0; }
-  60% { transform: scale(1.2) rotate(8deg); opacity: 1; }
-  100% { transform: scale(1) rotate(0deg); }
-}
-
-.yay-text {
-  font-family: var(--font-display);
-  font-size: clamp(2.2rem, 9vw, 3.2rem);
-  color: var(--red-deep);
-  margin-top: 18px;
-  animation: fadeIn 0.6s ease 0.15s both;
-}
-
-.yay-sub {
-  margin-top: 10px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--ink);
-  animation: fadeIn 0.6s ease 0.3s both;
-}
-
-.yay-sub2 {
-  margin-top: 6px;
-  font-size: 1rem;
-  color: var(--ink-soft);
-  animation: fadeIn 0.6s ease 0.45s both;
-}
-
-.btn-message {
-  margin-top: 30px;
-  display: inline-block;
-  background: linear-gradient(135deg, var(--pink), var(--pink-hot));
-  color: var(--white);
-  animation: fadeIn 0.6s ease 0.6s both, gentlePulse 2.4s ease-in-out 1.2s infinite;
-}
-
-.btn-message:hover {
-  transform: scale(1.06);
-}
-
-/* =========================================================================
-   CONFETTI (pieces injected by JS)
-   ========================================================================= */
-.confetti-layer {
-  z-index: 5;
-}
-
-.confetti-piece {
-  position: absolute;
-  top: -20px;
-  width: 9px;
-  height: 14px;
-  opacity: 0.9;
-  animation-name: confettiFall;
-  animation-timing-function: cubic-bezier(.4,0,.6,1);
-  animation-iteration-count: 1;
-  animation-fill-mode: forwards;
-}
-
-@keyframes confettiFall {
-  0% {
-    transform: translateY(0) rotate(0deg);
-    opacity: 1;
+  function playPop() {
+    try {
+      popSound.currentTime = 0;
+      popSound.volume = 0.5;
+      popSound.play().catch(() => {});
+    } catch (err) { /* audio is a nice-to-have, never block the UI on it */ }
   }
-  100% {
-    transform: translateY(105vh) rotate(540deg);
-    opacity: 0.9;
+
+
+  /* ============================ 4. ENVELOPE -> QUESTION FLOW ============================ */
+
+  const envelopeBtn = document.getElementById('envelopeBtn');
+  const envelope = document.getElementById('envelope');
+  const landingScreen = document.getElementById('landingScreen');
+  const questionScreen = document.getElementById('questionScreen');
+
+  let envelopeOpened = false;
+
+  envelopeBtn.addEventListener('click', () => {
+    if (envelopeOpened) return;
+    envelopeOpened = true;
+
+    envelope.classList.add('is-open');
+    playPop();
+    startMusic(); // this tap is the visitor's first interaction, so sound is allowed to play
+
+    // Let the open animation play, then swap screens
+    setTimeout(() => {
+      landingScreen.classList.add('hidden');
+      questionScreen.classList.remove('hidden');
+      questionScreen.classList.add('screen-enter');
+      startTypewriter();
+    }, 750);
+  });
+
+
+  /* ============================ 5. TYPEWRITER EFFECT ============================ */
+
+  const questionText = document.getElementById('questionText');
+  const FULL_QUESTION = 'Would you like to go on a date with me? ❤️';
+
+  function startTypewriter() {
+    questionText.textContent = '';
+    questionText.classList.add('typing-caret');
+    let i = 0;
+
+    function typeNext() {
+      if (i < FULL_QUESTION.length) {
+        questionText.textContent += FULL_QUESTION.charAt(i);
+        i++;
+        setTimeout(typeNext, 45);
+      } else {
+        questionText.classList.remove('typing-caret');
+      }
+    }
+    typeNext();
   }
-}
 
-/* =========================================================================
-   FIREWORKS CANVAS
-   ========================================================================= */
-#fireworksCanvas {
-  position: fixed;
-  inset: 0;
-  z-index: 4;
-  pointer-events: none;
-  display: none;
-}
 
-/* =========================================================================
-   HEART CURSOR TRAIL (dots appended to body by JS)
-   ========================================================================= */
-.cursor-heart {
-  position: fixed;
-  top: 0;
-  left: 0;
-  font-size: 14px;
-  pointer-events: none;
-  z-index: 999;
-  animation: trailFade 0.7s ease forwards;
-  will-change: transform, opacity;
-}
+  /* ============================ 6. YES / NO BUTTON GAME ============================ */
 
-@keyframes trailFade {
-  0% { transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
-  100% { transform: translate(-50%, -50%) scale(0.3) translateY(-20px); opacity: 0; }
-}
+  const yesBtn = document.getElementById('yesBtn');
+  const noBtn = document.getElementById('noBtn');
+  const buttonRow = document.getElementById('buttonRow');
+  const teasingMsg = document.getElementById('teasingMsg');
+  const questionCard = document.getElementById('questionCard');
 
-/* =========================================================================
-   RESPONSIVE TWEAKS
-   ========================================================================= */
-@media (max-width: 380px) {
-  .envelope { width: 170px; height: 112px; }
-  .envelope-front-left { border-width: 0 0 56px 85px; }
-  .envelope-front-right { border-width: 56px 85px 0 0; }
-  .envelope-flap { border-width: 0 85px 60px 85px; }
-  .card { padding: 34px 20px 28px; }
-  .btn { padding: 12px 22px; font-size: 0.92rem; }
-}
+  const TEASE_MESSAGES = [
+    'Sure? 🥺',
+    'Sure na gud?...',
+    'SIgena gad HAHAHAHHA',
+    'Ganda sigena hahaha',
+    "Foodtrip 🍕",
+    'kaluoy hahaha...',
+    "Sige asya kaman hito 💔",
+    'huyyy 😭',
+    'Ig yes nala kasi 🥹',
+    'bahala ka haha'
+  ];
 
-@media (hover: none) {
-  /* Touch devices: skip hover-only transforms so taps don't feel stuck */
-  .btn-yes:hover, .btn-message:hover {
-    transform: none;
+  let noClicks = 0;
+  const MIN_SCALE = 0.15; // NO button shrinks down to nearly nothing but stays technically clickable
+  const MAX_YES_SCALE = 2.2;
+
+  noBtn.addEventListener('click', () => {
+    noClicks++;
+
+    // Shrink NO, grow YES — clamped so things stay usable/visible
+    const noScale = Math.max(MIN_SCALE, 1 - noClicks * 0.12);
+    const yesScale = Math.min(MAX_YES_SCALE, 1 + noClicks * 0.16);
+
+    noBtn.style.transform = `scale(${noScale})`;
+    yesBtn.style.transform = `scale(${yesScale})`;
+
+    // Funny message that cycles/escalates
+    const msgIndex = Math.min(noClicks - 1, TEASE_MESSAGES.length - 1);
+    teasingMsg.textContent = TEASE_MESSAGES[msgIndex];
+    teasingMsg.style.animation = 'none';
+    // Force reflow so the fade animation can retrigger on repeat clicks
+    void teasingMsg.offsetWidth;
+    teasingMsg.style.animation = 'fadeFlicker 0.4s ease';
+
+    // After a couple of clicks, start making it flee to a random spot
+    // inside the card so it becomes genuinely hard to pin down
+    if (noClicks >= 2) {
+      makeNoButtonFlee();
+    }
+
+    playPop();
+  });
+
+  function makeNoButtonFlee() {
+    if (!noBtn.classList.contains('is-fleeing')) {
+      noBtn.classList.add('is-fleeing');
+      // Lock button-row height so the layout doesn't jump once NO becomes absolute
+      buttonRow.style.minHeight = buttonRow.offsetHeight + 'px';
+    }
+
+    const cardRect = questionCard.getBoundingClientRect();
+    const btnRect = noBtn.getBoundingClientRect();
+
+    // Keep some padding so the button never leaves the card entirely
+    const padding = 20;
+    const maxLeft = Math.max(padding, cardRect.width - btnRect.width - padding);
+    const maxTop = Math.max(padding, cardRect.height - btnRect.height - padding);
+
+    const randomLeft = padding + Math.random() * (maxLeft - padding);
+    const randomTop = padding + Math.random() * (maxTop - padding);
+
+    noBtn.style.left = randomLeft + 'px';
+    noBtn.style.top = randomTop + 'px';
   }
-}
+
+  // Also dodge on hover/pointer-near for extra chaos on desktop, once it's
+  // already fleeing (keeps early clicks easy so the joke lands)
+  noBtn.addEventListener('mouseenter', () => {
+    if (noClicks >= 3) {
+      makeNoButtonFlee();
+    }
+  });
+
+  yesBtn.addEventListener('click', () => {
+    playPop();
+    goToPlanScreen();
+  });
+
+
+  /* ============================ 6b. PLAN THE DATE (type + calendar) ============================ */
+
+  const planScreen = document.getElementById('planScreen');
+  const dateTypeGrid = document.getElementById('dateTypeGrid');
+  const calendarGrid = document.getElementById('calendarGrid');
+  const calendarMonthLabel = document.getElementById('calendarMonthLabel');
+  const prevMonthBtn = document.getElementById('prevMonthBtn');
+  const nextMonthBtn = document.getElementById('nextMonthBtn');
+  const planSelectionSummary = document.getElementById('planSelectionSummary');
+  const confirmPlanBtn = document.getElementById('confirmPlanBtn');
+
+  const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  let selectedDateType = null;
+  let selectedDateObj = null; // JS Date of the chosen day
+  let calendarViewYear;
+  let calendarViewMonth; // 0-indexed
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  function goToPlanScreen() {
+    questionScreen.classList.add('hidden');
+    planScreen.classList.remove('hidden');
+    planScreen.classList.add('screen-enter');
+
+    calendarViewYear = today.getFullYear();
+    calendarViewMonth = today.getMonth();
+    renderCalendar();
+  }
+
+  // ---- Date type selection ----
+  dateTypeGrid.addEventListener('click', (e) => {
+    const btn = e.target.closest('.date-type-btn');
+    if (!btn) return;
+
+    dateTypeGrid.querySelectorAll('.date-type-btn').forEach((b) => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedDateType = btn.dataset.type;
+
+    playPop();
+    updatePlanSummary();
+  });
+
+  // ---- Calendar rendering ----
+  function renderCalendar() {
+    calendarMonthLabel.textContent = `${MONTH_NAMES[calendarViewMonth]} ${calendarViewYear}`;
+    calendarGrid.innerHTML = '';
+
+    const firstDayIndex = new Date(calendarViewYear, calendarViewMonth, 1).getDay();
+    const daysInMonth = new Date(calendarViewYear, calendarViewMonth + 1, 0).getDate();
+
+    // Leading blank cells so the 1st lines up under the correct weekday
+    for (let i = 0; i < firstDayIndex; i++) {
+      const empty = document.createElement('span');
+      empty.className = 'cal-day empty';
+      calendarGrid.appendChild(empty);
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const cellDate = new Date(calendarViewYear, calendarViewMonth, day);
+      cellDate.setHours(0, 0, 0, 0);
+
+      const cell = document.createElement('button');
+      cell.type = 'button';
+      cell.className = 'cal-day';
+      cell.textContent = day;
+
+      if (cellDate.getTime() === today.getTime()) {
+        cell.classList.add('today');
+      }
+
+      if (cellDate < today) {
+        // Don't let anyone pick a date in the past
+        cell.classList.add('disabled');
+        cell.disabled = true;
+      } else {
+        cell.addEventListener('click', () => {
+          calendarGrid.querySelectorAll('.cal-day').forEach((c) => c.classList.remove('selected'));
+          cell.classList.add('selected');
+          selectedDateObj = cellDate;
+          playPop();
+          updatePlanSummary();
+        });
+      }
+
+      // Re-highlight if this is the already-selected day (e.g. after nav back)
+      if (selectedDateObj && cellDate.getTime() === selectedDateObj.getTime()) {
+        cell.classList.add('selected');
+      }
+
+      calendarGrid.appendChild(cell);
+    }
+  }
+
+  prevMonthBtn.addEventListener('click', () => {
+    calendarViewMonth--;
+    if (calendarViewMonth < 0) { calendarViewMonth = 11; calendarViewYear--; }
+    renderCalendar();
+  });
+
+  nextMonthBtn.addEventListener('click', () => {
+    calendarViewMonth++;
+    if (calendarViewMonth > 11) { calendarViewMonth = 0; calendarViewYear++; }
+    renderCalendar();
+  });
+
+  function updatePlanSummary() {
+    if (selectedDateType && selectedDateObj) {
+      const dateStr = selectedDateObj.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
+      planSelectionSummary.textContent = `${selectedDateType} on ${dateStr}`;
+      confirmPlanBtn.disabled = false;
+    } else {
+      planSelectionSummary.textContent = 'Pick a date type and a day \u2728';
+      confirmPlanBtn.disabled = true;
+    }
+  }
+
+  confirmPlanBtn.addEventListener('click', () => {
+    if (!selectedDateType || !selectedDateObj) return;
+    playPop();
+    goToCelebration();
+  });
+
+
+  /* ============================ 7. CELEBRATION: CONFETTI + FIREWORKS ============================ */
+
+  const celebrationScreen = document.getElementById('celebrationScreen');
+  const yaySub2 = document.getElementById('yaySub2');
+  const confettiLayer = document.getElementById('confettiLayer');
+  const CONFETTI_COLORS = ['#ff5d8f', '#ffb3c6', '#ff9ebb', '#e8385f', '#fff0f5', '#ffd6e2'];
+
+  function goToCelebration() {
+    planScreen.classList.add('hidden');
+    celebrationScreen.classList.remove('hidden');
+    celebrationScreen.classList.add('screen-enter');
+
+    // Reflect whatever the user picked on the plan screen, if anything
+    if (selectedDateType && selectedDateObj) {
+      const dateStr = selectedDateObj.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
+      yaySub2.textContent = `${selectedDateType} on ${dateStr}! 🌹`;
+    }
+
+    launchConfetti();
+    launchFireworks();
+
+    // Extra heart bloom for the celebration moment
+    for (let i = 0; i < 20; i++) {
+      setTimeout(spawnFloatingHeart, i * 80);
+    }
+  }
+
+  function launchConfetti() {
+    const pieceCount = 80;
+    for (let i = 0; i < pieceCount; i++) {
+      setTimeout(() => {
+        const piece = document.createElement('span');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + 'vw';
+        piece.style.background = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
+        piece.style.animationDuration = (2.5 + Math.random() * 2) + 's';
+        piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+        confettiLayer.appendChild(piece);
+        setTimeout(() => piece.remove(), 5000);
+      }, i * 25);
+    }
+  }
+
+  /* --- Lightweight canvas fireworks --- */
+  const canvas = document.getElementById('fireworksCanvas');
+  const ctx = canvas.getContext('2d');
+  let fireworkParticles = [];
+  let fireworksAnimationId = null;
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  function createFireworkBurst(x, y) {
+    const particleCount = 36;
+    const hueBase = 330 + Math.random() * 30; // stay in the pink/red family
+    for (let i = 0; i < particleCount; i++) {
+      const angle = (Math.PI * 2 * i) / particleCount;
+      const speed = 2 + Math.random() * 3;
+      fireworkParticles.push({
+        x, y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 60 + Math.random() * 20,
+        maxLife: 80,
+        color: `hsl(${hueBase + Math.random() * 20 - 10}, 90%, ${60 + Math.random() * 20}%)`
+      });
+    }
+  }
+
+  function animateFireworks() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    fireworkParticles.forEach((p) => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.04; // gentle gravity
+      p.life -= 1;
+
+      ctx.globalAlpha = Math.max(p.life / p.maxLife, 0);
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    ctx.globalAlpha = 1;
+    fireworkParticles = fireworkParticles.filter((p) => p.life > 0);
+
+    if (fireworkParticles.length > 0) {
+      fireworksAnimationId = requestAnimationFrame(animateFireworks);
+    } else {
+      canvas.style.display = 'none';
+      fireworksAnimationId = null;
+    }
+  }
+
+  function launchFireworks() {
+    canvas.style.display = 'block';
+
+    const bursts = 5;
+    for (let i = 0; i < bursts; i++) {
+      setTimeout(() => {
+        const x = canvas.width * (0.2 + Math.random() * 0.6);
+        const y = canvas.height * (0.15 + Math.random() * 0.35);
+        createFireworkBurst(x, y);
+        if (!fireworksAnimationId) {
+          fireworksAnimationId = requestAnimationFrame(animateFireworks);
+        }
+      }, i * 400);
+    }
+  }
+
+
+  /* ============================ 8. MISC FUN ============================ */
+
+  // Disable right-click, purely for playful effect (as requested)
+  document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+  // Belt-and-suspenders against accidental text selection/drag on mobile
+  document.addEventListener('selectstart', (e) => e.preventDefault());
+  document.addEventListener('dragstart', (e) => e.preventDefault());
+
+});
