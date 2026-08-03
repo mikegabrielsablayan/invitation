@@ -83,45 +83,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ============================ 3. BACKGROUND MUSIC (auto-starts, no off switch) ============================ */
 
+  const bgMusic = document.getElementById('bgMusic');
   const popSound = document.getElementById('popSound');
-
-  // Background music is a hidden YouTube embed, loaded via the YouTube
-  // IFrame API. The video ID below is from the chosen track's watch URL.
-  const YT_VIDEO_ID = 'iygXgP2nOF4'; // NIKI - Take A Chance With Me (Official Lyric Video)
-  let ytPlayer = null;
-  let ytReady = false;
   let musicPlaying = false;
-  let musicRequested = false; // set true the moment the visitor taps the envelope
-
-  // The YouTube IFrame API calls this global function once it has loaded.
-  window.onYouTubeIframeAPIReady = function () {
-    ytPlayer = new YT.Player('ytPlayer', {
-      videoId: YT_VIDEO_ID,
-      playerVars: {
-        autoplay: 0,
-        controls: 0,
-        loop: 1,
-        playlist: YT_VIDEO_ID, // required for loop to work on a single video
-        playsinline: 1
-      },
-      events: {
-        onReady: () => {
-          ytReady = true;
-          ytPlayer.setVolume(40);
-          // If the envelope was already tapped before the API finished
-          // loading, start the music now instead of waiting for another tap
-          if (musicRequested) startMusic();
-        }
-      }
-    });
-  };
 
   function startMusic() {
-    musicRequested = true;
-    if (ytReady && !musicPlaying) {
-      ytPlayer.playVideo();
-      musicPlaying = true;
-    }
+    if (musicPlaying) return;
+    musicPlaying = true;
+    bgMusic.volume = 0.4;
+    // play() returns a promise; browsers only allow it because this is
+    // called from inside a real click handler (a genuine user gesture)
+    bgMusic.play().catch(() => {
+      // If it's still blocked for some reason, quietly reset the flag
+      // so a later interaction can try again instead of staying stuck
+      musicPlaying = false;
+    });
   }
 
   function playPop() {
