@@ -506,7 +506,184 @@ button:focus-visible, a:focus-visible {
 }
 
 /* =========================================================================
-   SCREEN 3 — CELEBRATION
+   SCREEN 3 — PLAN THE DATE (type picker + calendar)
+   ========================================================================= */
+.plan-card {
+  gap: 16px;
+  padding: 34px 24px 30px;
+}
+
+.plan-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 6vw, 1.8rem);
+  color: var(--red-deep);
+}
+
+.plan-subtitle {
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  margin-top: -6px;
+}
+
+/* ---- Date type cards ---- */
+.date-type-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.date-type-btn {
+  background: var(--pink-pale);
+  border: 2px solid transparent;
+  border-radius: 18px;
+  padding: 14px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.date-type-emoji {
+  font-size: 1.6rem;
+}
+
+.date-type-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.2;
+}
+
+.date-type-btn:hover {
+  transform: translateY(-3px);
+  background: var(--pink-soft);
+}
+
+.date-type-btn.selected {
+  border-color: var(--red-deep);
+  background: linear-gradient(135deg, var(--pink), var(--pink-hot));
+  animation: gentlePulse 1.6s ease-in-out infinite;
+}
+
+.date-type-btn.selected .date-type-label {
+  color: var(--white);
+}
+
+/* ---- Calendar ---- */
+.calendar {
+  width: 100%;
+  margin-top: 6px;
+  background: var(--pink-pale);
+  border-radius: 18px;
+  padding: 14px;
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.calendar-month-label {
+  font-weight: 700;
+  color: var(--red-deep);
+  font-size: 0.95rem;
+}
+
+.cal-nav-btn {
+  background: var(--white);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 0.8rem;
+  color: var(--red-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px var(--shadow);
+  transition: transform 0.2s ease;
+}
+
+.cal-nav-btn:hover {
+  transform: scale(1.1);
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--ink-soft);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.cal-day {
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--ink);
+  background: transparent;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.cal-day:hover:not(.disabled):not(.empty) {
+  background: var(--pink-soft);
+}
+
+.cal-day.empty {
+  visibility: hidden;
+}
+
+.cal-day.disabled {
+  color: #d8b9c3;
+  cursor: default;
+}
+
+.cal-day.today {
+  border: 2px solid var(--pink-hot);
+}
+
+.cal-day.selected {
+  background: linear-gradient(135deg, var(--pink-hot), var(--red-deep));
+  color: var(--white);
+  transform: scale(1.1);
+}
+
+.plan-selection {
+  min-height: 1.3em;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--red-deep);
+}
+
+#confirmPlanBtn {
+  margin-top: 4px;
+}
+
+#confirmPlanBtn:disabled {
+  opacity: 0.45;
+  animation: none;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* =========================================================================
+   SCREEN 4 — CELEBRATION
    ========================================================================= */
 .celebration-screen {
   position: relative;
