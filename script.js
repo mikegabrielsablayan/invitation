@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Background music is a hidden YouTube embed, loaded via the YouTube
   // IFrame API. The video ID below is from the chosen track's watch URL.
-  const YT_VIDEO_ID = '9OyZznPFCeo'; // TORPE by JAO
+  const YT_VIDEO_ID = 'iygXgP2nOF4'; // NIKI - Take A Chance With Me
   let ytPlayer = null;
   let ytReady = false;
   let musicPlaying = false;
