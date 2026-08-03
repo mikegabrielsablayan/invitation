@@ -192,16 +192,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const questionCard = document.getElementById('questionCard');
 
   const TEASE_MESSAGES = [
-    'Sure? 🥺',
-    'Sure na gud?...',
-    'SIgena gad HAHAHAHHA',
-    'Ganda sigena hahaha',
-    "Foodtrip 🍕",
-    'kaluoy hahaha...',
-    "Sige asya kaman hito 💔",
-    'huyyy 😭',
-    'Ig yes nala kasi 🥹',
-    'bahala ka haha'
+    'Are you sure? 🥺',
+    'Think again...',
+    'Please?',
+    'Pretty please?',
+    "I'll buy you food 🍕",
+    'Last chance...',
+    "Don't break my heart 💔",
+    'Come on 😭',
+    'Just say yes already 🥹',
+    'The YES button is right there 👉'
   ];
 
   let noClicks = 0;
