@@ -194,12 +194,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const TEASE_MESSAGES = [
     'ARAY KOO 🥺',
     'HAHA SURE NA?',
-    'Please?',
+    '🤪🤪🤪',
     'Ganda sigena?',
     "foodtrip? 🍕",
     'waray gud?...',
     "ahhhhh 💔",
-    'wuyyy 😭',
+    '😭😭😭',
     'Ig yes na it cutiee 🥹',
     'Bahala ka hahaha'
   ];
