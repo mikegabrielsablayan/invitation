@@ -84,20 +84,44 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ============================ 3. MUSIC TOGGLE + SOUND FX ============================ */
 
   const musicToggle = document.getElementById('musicToggle');
-  const bgMusic = document.getElementById('bgMusic');
   const popSound = document.getElementById('popSound');
   let musicPlaying = false;
 
+  // Background music is a hidden YouTube embed, loaded via the YouTube
+  // IFrame API. The video ID below is from the chosen track's watch URL.
+  const YT_VIDEO_ID = '9OyZznPFCeo'; // TORPE by JAO
+  let ytPlayer = null;
+  let ytReady = false;
+
+  // The YouTube IFrame API calls this global function once it has loaded.
+  window.onYouTubeIframeAPIReady = function () {
+    ytPlayer = new YT.Player('ytPlayer', {
+      videoId: YT_VIDEO_ID,
+      playerVars: {
+        autoplay: 0,
+        controls: 0,
+        loop: 1,
+        playlist: YT_VIDEO_ID, // required for loop to work on a single video
+        playsinline: 1
+      },
+      events: {
+        onReady: () => {
+          ytReady = true;
+          ytPlayer.setVolume(40);
+        }
+      }
+    });
+  };
+
   musicToggle.addEventListener('click', () => {
+    if (!ytReady) return; // API still loading; ignore clicks until ready
+
     musicPlaying = !musicPlaying;
     if (musicPlaying) {
-      bgMusic.volume = 0.4;
-      // play() returns a promise; browsers may block autoplay until this
-      // user gesture, which is exactly when we're calling it, so it's safe
-      bgMusic.play().catch(() => { /* silently ignore if blocked */ });
+      ytPlayer.playVideo();
       musicToggle.textContent = '🔊';
     } else {
-      bgMusic.pause();
+      ytPlayer.pauseVideo();
       musicToggle.textContent = '🔇';
     }
   });
@@ -244,6 +268,131 @@ document.addEventListener('DOMContentLoaded', () => {
 
   yesBtn.addEventListener('click', () => {
     playPop();
+    goToPlanScreen();
+  });
+
+
+  /* ============================ 6b. PLAN THE DATE (type + calendar) ============================ */
+
+  const planScreen = document.getElementById('planScreen');
+  const dateTypeGrid = document.getElementById('dateTypeGrid');
+  const calendarGrid = document.getElementById('calendarGrid');
+  const calendarMonthLabel = document.getElementById('calendarMonthLabel');
+  const prevMonthBtn = document.getElementById('prevMonthBtn');
+  const nextMonthBtn = document.getElementById('nextMonthBtn');
+  const planSelectionSummary = document.getElementById('planSelectionSummary');
+  const confirmPlanBtn = document.getElementById('confirmPlanBtn');
+
+  const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  let selectedDateType = null;
+  let selectedDateObj = null; // JS Date of the chosen day
+  let calendarViewYear;
+  let calendarViewMonth; // 0-indexed
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  function goToPlanScreen() {
+    questionScreen.classList.add('hidden');
+    planScreen.classList.remove('hidden');
+    planScreen.classList.add('screen-enter');
+
+    calendarViewYear = today.getFullYear();
+    calendarViewMonth = today.getMonth();
+    renderCalendar();
+  }
+
+  // ---- Date type selection ----
+  dateTypeGrid.addEventListener('click', (e) => {
+    const btn = e.target.closest('.date-type-btn');
+    if (!btn) return;
+
+    dateTypeGrid.querySelectorAll('.date-type-btn').forEach((b) => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedDateType = btn.dataset.type;
+
+    playPop();
+    updatePlanSummary();
+  });
+
+  // ---- Calendar rendering ----
+  function renderCalendar() {
+    calendarMonthLabel.textContent = `${MONTH_NAMES[calendarViewMonth]} ${calendarViewYear}`;
+    calendarGrid.innerHTML = '';
+
+    const firstDayIndex = new Date(calendarViewYear, calendarViewMonth, 1).getDay();
+    const daysInMonth = new Date(calendarViewYear, calendarViewMonth + 1, 0).getDate();
+
+    // Leading blank cells so the 1st lines up under the correct weekday
+    for (let i = 0; i < firstDayIndex; i++) {
+      const empty = document.createElement('span');
+      empty.className = 'cal-day empty';
+      calendarGrid.appendChild(empty);
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const cellDate = new Date(calendarViewYear, calendarViewMonth, day);
+      cellDate.setHours(0, 0, 0, 0);
+
+      const cell = document.createElement('button');
+      cell.type = 'button';
+      cell.className = 'cal-day';
+      cell.textContent = day;
+
+      if (cellDate.getTime() === today.getTime()) {
+        cell.classList.add('today');
+      }
+
+      if (cellDate < today) {
+        // Don't let anyone pick a date in the past
+        cell.classList.add('disabled');
+        cell.disabled = true;
+      } else {
+        cell.addEventListener('click', () => {
+          calendarGrid.querySelectorAll('.cal-day').forEach((c) => c.classList.remove('selected'));
+          cell.classList.add('selected');
+          selectedDateObj = cellDate;
+          playPop();
+          updatePlanSummary();
+        });
+      }
+
+      // Re-highlight if this is the already-selected day (e.g. after nav back)
+      if (selectedDateObj && cellDate.getTime() === selectedDateObj.getTime()) {
+        cell.classList.add('selected');
+      }
+
+      calendarGrid.appendChild(cell);
+    }
+  }
+
+  prevMonthBtn.addEventListener('click', () => {
+    calendarViewMonth--;
+    if (calendarViewMonth < 0) { calendarViewMonth = 11; calendarViewYear--; }
+    renderCalendar();
+  });
+
+  nextMonthBtn.addEventListener('click', () => {
+    calendarViewMonth++;
+    if (calendarViewMonth > 11) { calendarViewMonth = 0; calendarViewYear++; }
+    renderCalendar();
+  });
+
+  function updatePlanSummary() {
+    if (selectedDateType && selectedDateObj) {
+      const dateStr = selectedDateObj.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
+      planSelectionSummary.textContent = `${selectedDateType} on ${dateStr}`;
+      confirmPlanBtn.disabled = false;
+    } else {
+      planSelectionSummary.textContent = 'Pick a date type and a day \u2728';
+      confirmPlanBtn.disabled = true;
+    }
+  }
+
+  confirmPlanBtn.addEventListener('click', () => {
+    if (!selectedDateType || !selectedDateObj) return;
+    playPop();
     goToCelebration();
   });
 
@@ -251,13 +400,20 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ============================ 7. CELEBRATION: CONFETTI + FIREWORKS ============================ */
 
   const celebrationScreen = document.getElementById('celebrationScreen');
+  const yaySub2 = document.getElementById('yaySub2');
   const confettiLayer = document.getElementById('confettiLayer');
   const CONFETTI_COLORS = ['#ff5d8f', '#ffb3c6', '#ff9ebb', '#e8385f', '#fff0f5', '#ffd6e2'];
 
   function goToCelebration() {
-    questionScreen.classList.add('hidden');
+    planScreen.classList.add('hidden');
     celebrationScreen.classList.remove('hidden');
     celebrationScreen.classList.add('screen-enter');
+
+    // Reflect whatever the user picked on the plan screen, if anything
+    if (selectedDateType && selectedDateObj) {
+      const dateStr = selectedDateObj.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
+      yaySub2.textContent = `${selectedDateType} on ${dateStr}! 🌹`;
+    }
 
     launchConfetti();
     launchFireworks();
