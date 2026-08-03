@@ -42,12 +42,9 @@
        block audio-with-sound before that, so this is the earliest point
        it's legally allowed to start. No mute button, per request: once
        it starts, it keeps playing and looping.
-       IMPORTANT: add your "Take A Chance With Me" MP3 file to this same
-       folder and name it exactly "take-a-chance-with-me.mp3" (or update
-       the src below to match whatever filename you use). -->
-  <audio id="bgMusic" loop preload="auto">
-    <source src="take-a-chance-with-me.mp3" type="audio/mpeg" />
-  </audio>
+       Track: TORPE by JAO — https://www.youtube.com/watch?v=9OyZznPFCeo -->
+  <div id="ytPlayer" style="position:fixed; width:1px; height:1px; opacity:0; pointer-events:none;"></div>
+  <script src="https://www.youtube.com/iframe_api"></script>
   <audio id="popSound" preload="none">
     <source src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_c6ccf3d54c.mp3?filename=pop-39222.mp3" type="audio/mpeg" />
   </audio>
@@ -136,7 +133,7 @@
     <section id="celebrationScreen" class="screen celebration-screen hidden">
       <div class="happy-face" id="happyFace">😊❤️</div>
       <h1 class="yay-text">YAY!! 🎉</h1>
-      <p class="yay-sub">diba diba YES hahaha 😊</p>
+      <p class="yay-sub">I knew you'd say YES! ❤️</p>
       <p class="yay-sub2" id="yaySub2">Can't wait for our date! 🌹</p>
 
       <a
