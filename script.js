@@ -401,6 +401,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const celebrationScreen = document.getElementById('celebrationScreen');
   const yaySub2 = document.getElementById('yaySub2');
+  const sendMessageBtn = document.getElementById('sendMessageBtn');
+  const RECIPIENT_EMAIL = 'mike.sablayan@gmail.com';
   const confettiLayer = document.getElementById('confettiLayer');
   const CONFETTI_COLORS = ['#ff5d8f', '#ffb3c6', '#ff9ebb', '#e8385f', '#fff0f5', '#ffd6e2'];
 
@@ -409,10 +411,15 @@ document.addEventListener('DOMContentLoaded', () => {
     celebrationScreen.classList.remove('hidden');
     celebrationScreen.classList.add('screen-enter');
 
-    // Reflect whatever the user picked on the plan screen, if anything
+    // Reflect whatever the user picked on the plan screen, if anything,
+    // and build a pre-filled email so Gab actually receives the answer
     if (selectedDateType && selectedDateObj) {
       const dateStr = selectedDateObj.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
       yaySub2.textContent = `${selectedDateType} on ${dateStr}! 🌹`;
+
+      const subject = "She said YES! 💕";
+      const body = `I said YES! 🎉\n\nDate type: ${selectedDateType}\nDate: ${dateStr}\n\nCan't wait! ❤️`;
+      sendMessageBtn.href = `mailto:${RECIPIENT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     }
 
     launchConfetti();
